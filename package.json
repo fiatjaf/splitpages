@@ -4,7 +4,6 @@
   "description": "",
   "dependencies": {
     "co-busboy": "^1.3.1",
-    "js-base64": "^2.1.9",
     "koa": "^1.1.2",
     "koa-basic-auth": "^1.1.2",
     "koa-logger": "^1.2.2",
