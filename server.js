@@ -1,10 +1,9 @@
 var fs = require('fs')
 var path = require('path')
-var os = require('os')
 var parse = require('co-busboy')
-var sendfile = require('koa-sendfile')
+var send = require('koa-send')
 var logger = require('koa-logger')
-var spawnSync = require('child_process').spawnSync
+var execSync = require('child_process').execSync
 var modifyFilename = require('modify-filename')
 var serve = require('koa-static')
 var koa = require('koa')
@@ -21,8 +20,12 @@ app.use(function *(next) {
   // ignore non-GETs
   if ('GET' !== this.method) return yield next
 
-  var indexHTML = fs.readFileSync(__dirname + '/public/index.html', 'utf-8')
-  this.body = indexHTML
+  if (this.path === '/') {
+    var indexHTML = fs.readFileSync(__dirname + '/public/index.html', 'utf-8')
+    this.body = indexHTML
+  } else if (this.path.slice(0, 5) === '/tmp/') {
+    yield send(this, this.path.slice(5), { root: __dirname + '/tmp' })
+  }
 })
 
 app.use(function *(next) {
@@ -36,7 +39,7 @@ app.use(function *(next) {
   var location
 
   while (part = yield parts) {
-    location = path.join(os.tmpdir(), part.filename)
+    location = path.join('tmp', part.filename)
     var stream = fs.createWriteStream(location)
     part.pipe(stream)
     locations.push(location)
@@ -44,9 +47,9 @@ app.use(function *(next) {
   }
 
   var newlocation = modifyFilename(location, (f, x) => f + '-splitted' + x)
-  spawnSync('./mutool', ['poster', '-x', '2', location, newlocation])
-  yield* sendfile.call(this, newlocation)
-  if (!this.status) this.throw(404)
+  execSync(`./mutool poster -x 2 '${location}' '${newlocation}'`)
+  console.log('serving file', newlocation)
+  this.redirect(newlocation)
 })
 
 var port = process.env.PORT || 5000

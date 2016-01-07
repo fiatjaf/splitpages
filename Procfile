@@ -1,1 +1,1 @@
-web: node --harmony server.js
+web: rm -fr tmp && mkdir -p tmp && node --harmony server.js
