@@ -47,7 +47,7 @@ app.use(function *(next) {
   }
 
   var newlocation = modifyFilename(location, (f, x) => f + '-splitted' + x)
-  execSync(`${__dirname}/mutool poster -x 2 '${location}' '${newlocation}'`)
+  execSync(`./mupdf-1.8-source/build/debug/mutool poster -x 2 '${location}' '${newlocation}'`)
   console.log('serving file', newlocation)
   this.redirect(newlocation)
 })
